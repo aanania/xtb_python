@@ -4,14 +4,17 @@ import logging
 import time
 import ssl
 from threading import Thread
+import yaml
 
 # set to true on debug environment only
 DEBUG = True
 
 #default connection properites
 DEFAULT_XAPI_ADDRESS        = 'xapi.xtb.com'
-DEFAULT_XAPI_PORT           = 5124
-DEFUALT_XAPI_STREAMING_PORT = 5125
+#DEFAULT_XAPI_PORT           = 5124  # Demo
+#DEFUALT_XAPI_STREAMING_PORT = 5125  # Demo
+DEFAULT_XAPI_PORT           = 5112  # Real
+DEFUALT_XAPI_STREAMING_PORT = 5113  # Real
 
 # wrapper name and version
 WRAPPER_NAME    = 'python'
@@ -27,6 +30,14 @@ API_MAX_CONN_TRIES = 3
 logger = logging.getLogger("jsonSocket")
 FORMAT = '[%(asctime)-15s][%(funcName)s:%(lineno)d] %(message)s'
 logging.basicConfig(format=FORMAT)
+
+# private information
+USERID = ''
+PASSWORD = ''
+with open('../../config/config.yml') as file:
+    user_yml = yaml.safe_load(file)
+    USERID = user_yml['user_id']
+    PASSWORD = user_yml['password']
 
 if DEBUG:
     logger.setLevel(logging.DEBUG)
@@ -302,8 +313,8 @@ def procNewsExample(msg):
 def main():
 
     # enter your login credentials here
-    userId = 12345
-    password = "password"
+    userId = USERID
+    password = PASSWORD
 
     # create & connect to RR socket
     client = APIClient()
