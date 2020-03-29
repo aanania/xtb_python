@@ -31,14 +31,6 @@ logger = logging.getLogger("jsonSocket")
 FORMAT = '[%(asctime)-15s][%(funcName)s:%(lineno)d] %(message)s'
 logging.basicConfig(format=FORMAT)
 
-# private information
-USERID = ''
-PASSWORD = ''
-with open('../../config/config.yml') as file:
-    user_yml = yaml.safe_load(file)
-    USERID = user_yml['user_id']
-    PASSWORD = user_yml['password']
-
 if DEBUG:
     logger.setLevel(logging.DEBUG)
 else:
@@ -272,8 +264,8 @@ class APIStreamClient(JsonSocket):
 
     def unsubscribeNews(self):
         self.execute(dict(command='stopNews', streamSessionId=self._ssId))
-
-
+        
+        
 # Command templates
 def baseCommand(commandName, arguments=None):
     if arguments==None:
@@ -282,80 +274,3 @@ def baseCommand(commandName, arguments=None):
 
 def loginCommand(userId, password, appName=''):
     return baseCommand('login', dict(userId=userId, password=password, appName=appName))
-
-
-
-# example function for processing ticks from Streaming socket
-def procTickExample(msg): 
-    print("TICK: ", msg)
-
-# example function for processing trades from Streaming socket
-def procTradeExample(msg): 
-    print("TRADE: ", msg)
-
-# example function for processing trades from Streaming socket
-def procBalanceExample(msg): 
-    print("BALANCE: ", msg)
-
-# example function for processing trades from Streaming socket
-def procTradeStatusExample(msg): 
-    print("TRADE STATUS: ", msg)
-
-# example function for processing trades from Streaming socket
-def procProfitExample(msg): 
-    print("PROFIT: ", msg)
-
-# example function for processing news from Streaming socket
-def procNewsExample(msg): 
-    print("NEWS: ", msg)
-    
-
-def main():
-
-    # enter your login credentials here
-    userId = USERID
-    password = PASSWORD
-
-    # create & connect to RR socket
-    client = APIClient()
-    
-    # connect to RR socket, login
-    loginResponse = client.execute(loginCommand(userId=userId, password=password))
-    logger.info(str(loginResponse)) 
-
-    # check if user logged in correctly
-    if(loginResponse['status'] == False):
-        print('Login failed. Error code: {0}'.format(loginResponse['errorCode']))
-        return
-
-    # get ssId from login response
-    ssid = loginResponse['streamSessionId']
-    
-    # second method of invoking commands
-    resp = client.commandExecute('getAllSymbols')
-    
-    # create & connect to Streaming socket with given ssID
-    # and functions for processing ticks, trades, profit and tradeStatus
-    sclient = APIStreamClient(ssId=ssid, tickFun=procTickExample, tradeFun=procTradeExample, profitFun=procProfitExample, tradeStatusFun=procTradeStatusExample)
-    
-    # subscribe for trades
-    sclient.subscribeTrades()
-    
-    # subscribe for prices
-    sclient.subscribePrices(['EURUSD', 'EURGBP', 'EURJPY'])
-
-    # subscribe for profits
-    sclient.subscribeProfits()
-
-    # this is an example, make it run for 5 seconds
-    time.sleep(5)
-    
-    # gracefully close streaming socket
-    sclient.disconnect()
-    
-    # gracefully close RR socket
-    client.disconnect()
-    
-    
-if __name__ == "__main__":
-    main()	
